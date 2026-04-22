@@ -17,6 +17,7 @@ dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
 # 3. THE KERNEL SWAP
 # This swaps the kernel and adds the CachyOS-specific performance tools.
 rpm-ostree override replace \
+    --experimental \
     --from repo=copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos \
     kernel kernel-core kernel-modules kernel-modules-extra kernel-modules-core \
     --install kernel-cachyos-devel-matched \
