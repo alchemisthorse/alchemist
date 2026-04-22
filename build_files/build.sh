@@ -31,7 +31,9 @@ rpm-ostree override replace \
     --install mangohud \
     --install scx-manager \
     --install scx-scheds
-
+    --install waydroid
+    
 # 4. ENABLE SERVICES
 # This ensures your tuning starts automatically on boot.
 systemctl enable ananicy-cpp
+systemctl enable waydroid-container.service
