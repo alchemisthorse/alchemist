@@ -9,7 +9,6 @@ curl -Lo /etc/yum.repos.d/bieszczaders-kernel-cachyos-addons.repo https://copr.f
 # 2. STRIP BLOAT (Handheld & Power stuff)
 # We remove tuned because cachyos-settings and ananicy-cpp handle things better.
 rpm-ostree override remove \
-    waydroid \
     power-profiles-daemon \
     steamdeck-dsp \
     steamdeck-firmware \
@@ -26,14 +25,9 @@ rpm-ostree override replace \
     --install cachyos-addons \
     --install ananicy-cpp \
     --install cachyos-ananicy-rules \
-    --install mangohud \
     --install scx-manager \
     --install scx-scheds \
-    --install waydroid
     
 # 4. ENABLE SERVICES
 # This ensures your tuning starts automatically on boot.
-systemctl enable tuned
-systemctl enable tuned-ppd
 systemctl enable ananicy-cpp
-systemctl enable waydroid-container.service
