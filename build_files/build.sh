@@ -6,13 +6,13 @@ dnf5 -y copr enable bieszczaders/kernel-cachyos
 dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
 
 # 2. REMOVE CONFLICTS & BLOAT
-# We MUST remove power-profiles-daemon so Tuned can work.
-rpm-ostree override remove \
-    power-profiles-daemon \
-    steamdeck-dsp \
-    steamdeck-firmware \
-    jupiter-hw-support \
-    jupiter-fan-control
+# We MUST remove power-profiles-daemon so Tuned can work.3
+#rpm-ostree override remove \
+#    power-profiles-daemon \
+#    steamdeck-dsp \
+#    steamdeck-firmware \
+#    jupiter-hw-support \
+#    jupiter-fan-control
 
 # 3. THE KERNEL SWAP
 # This swaps the kernel and adds the CachyOS-specific performance tools.
