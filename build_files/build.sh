@@ -5,9 +5,19 @@ set -ouex pipefail
 dnf5 -y copr enable bieszczaders/kernel-cachyos-lto
 dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
 
-# 2. THE KERNEL SWAP
-# We add --pno (prepare-only) or skip the post-scripts to prevent dracut from 
-# running before we have a chance to run depmod.
+# 2. Install all kernel packages and run depmod before letting dracut trigger
+# Use a single dnf install, then immediately run depmod BEFORE rpm-ostree touches it
+dnf5 install -y \
+    kernel-cachyos-lto \
+    kernel-cachyos-lto-core \
+    kernel-cachyos-lto-modules
+
+# 3. Run depmod NOW, before rpm-ostree kernel-install hooks fire
+KERNEL_VERSION=$(rpm -q --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}' kernel-cachyos-lto-core)
+depmod -a "$KERNEL_VERSION"
+
+# 4. NOW use rpm-ostree to finalize the kernel swap
+# The modules.dep will already exist, so dracut will succeed
 rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos-lto \
@@ -15,15 +25,7 @@ rpm-ostree override replace \
     kernel-cachyos-lto-core \
     kernel-cachyos-lto-modules
 
-# 3. FIX FOR DRACUT ERROR: Manual depmod
-# Your logs show version: 6.19.12-cachyos1.lto.fc43.x86_64
-# This command generates the missing modules.dep file that dracut was crying about.
-KERNEL_VERSION=$(rpm -q --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}' kernel-cachyos-lto-core)
-depmod -a "$KERNEL_VERSION"
-
-# 4. INSTALL ADDONS & SCHEDULERS
-# This step will now succeed because depmod has been run, 
-# and this transaction will successfully trigger the initramfs generation.
+# 5. Install addons & schedulers
 rpm-ostree install \
     kernel-cachyos-lto-devel-matched \
     cachyos-settings \
@@ -34,9 +36,9 @@ rpm-ostree install \
     scx-scheds \
     scx-tools
 
-# 5. ENABLE SERVICES
+# 6. Enable services
 systemctl enable ananicy-cpp.service
 systemctl enable scx-loader.service
 
-# 6. CLEANUP
+# 7. Cleanup
 dnf5 clean all
