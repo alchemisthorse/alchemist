@@ -1,13 +1,12 @@
 #!/bin/bash
 set -ouex pipefail
 
-# 1. ADD REPOS (CachyOS Kernel & Addons)
-# We use curl to drop the repo files directly into the system
-curl -Lo /etc/yum.repos.d/bieszczaders-kernel-cachyos.repo https://copr.fedorainfracloud.org/coprs/bieszczaders/kernel-cachyos/repo/fedora-40/bieszczaders-kernel-cachyos-fedora-40.repo
-curl -Lo /etc/yum.repos.d/bieszczaders-kernel-cachyos-addons.repo https://copr.fedorainfracloud.org/coprs/bieszczaders/kernel-cachyos-addons/repo/fedora-40/bieszczaders-kernel-cachyos-addons-fedora-40.repo
+# 1. ADD REPOS
+dnf5 -y copr enable bieszczaders/kernel-cachyos
+dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
 
-# 2. STRIP BLOAT (Handheld & Power stuff)
-# We remove tuned because cachyos-settings and ananicy-cpp handle things better.
+# 2. REMOVE CONFLICTS & BLOAT
+# We MUST remove power-profiles-daemon so Tuned can work.
 rpm-ostree override remove \
     power-profiles-daemon \
     steamdeck-dsp \
@@ -15,10 +14,10 @@ rpm-ostree override remove \
     jupiter-hw-support \
     jupiter-fan-control
 
-# 3. THE "SWAP": Replace Fedora Kernel with CachyOS + Install your Addons
-# This single command replaces the heart of the OS.
+# 3. THE KERNEL SWAP
+# This swaps the kernel and adds the CachyOS-specific performance tools.
 rpm-ostree override replace \
-    --from repo=copr:copr.fedorainfraconfig.org:bieszczaders:kernel-cachyos \
+    --from repo=copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos \
     kernel kernel-core kernel-modules kernel-modules-extra kernel-modules-core \
     --install kernel-cachyos-devel-matched \
     --install cachyos-settings \
@@ -26,8 +25,11 @@ rpm-ostree override replace \
     --install ananicy-cpp \
     --install cachyos-ananicy-rules \
     --install scx-manager \
-    --install scx-scheds \
-    
+    --install scx-scheds
+
 # 4. ENABLE SERVICES
-# This ensures your tuning starts automatically on boot.
 systemctl enable ananicy-cpp
+# Waydroid and Tuned are already enabled in Bazzite, 
+# but running these again doesn't hurt just to be safe:
+systemctl enable waydroid-container.service
+systemctl enable tuned
