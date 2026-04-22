@@ -6,17 +6,17 @@ dnf5 -y copr enable bieszczaders/kernel-cachyos-lto
 dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
 
 # 2. THE KERNEL SWAP
-# Swapping to the LTO-optimized kernel. 
-# We target the base package and let rpm-ostree resolve the sub-packages.
+# The package name in the LTO repo is 'kernel-cachyos'. 
+# The 'lto' part is in the repo name, not the package name itself.
 rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos-lto \
-    kernel=kernel-cachyos-lto
+    kernel=kernel-cachyos
 
 # 3. INSTALL ADDONS & SCHEDULERS
-# Added scx-scheds as requested.
+# Matching the names for the devel package and addons
 rpm-ostree install \
-    kernel-cachyos-lto-devel-matched \
+    kernel-cachyos-devel-matched \
     cachyos-settings \
     cachyos-addons \
     ananicy-cpp \
@@ -26,7 +26,5 @@ rpm-ostree install \
     scx-tools
 
 # 4. ENABLE SERVICES
-# ananicy-cpp: Manages process priorities automatically.
-# scx-loader: The service that manages and runs the sched-ext schedulers.
 systemctl enable ananicy-cpp
 systemctl enable scx-loader
