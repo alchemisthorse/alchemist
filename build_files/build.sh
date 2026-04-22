@@ -1,21 +1,20 @@
 #!/bin/bash
 set -ouex pipefail
 
-# 1. Enable both COPR repositories
-dnf5 -y copr enable bieszczaders/kernel-cachyos
+# 1. Enable the LTO kernel repo and the Addons repo
+dnf5 -y copr enable bieszczaders/kernel-cachyos-lto
 dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
 
-# 2. STEP ONE: Replace the Kernel
-# We use --from to point specifically to the kernel-cachyos repo.
-# The A=B syntax maps the standard Fedora names to the CachyOS names.
+# 2. THE KERNEL SWAP (Using the LTO Repo)
+# Notice we added the .lto suffix to the package names to match your screenshot
 rpm-ostree override replace \
     --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos \
-    kernel=kernel-cachyos \
-    kernel-core=kernel-cachyos-core \
-    kernel-modules=kernel-cachyos-modules \
-    kernel-modules-extra=kernel-cachyos-modules-extra \
-    kernel-modules-core=kernel-cachyos-modules-core
+    --from repo=copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos-lto \
+    kernel=kernel-cachyos-lto \
+    kernel-core=kernel-cachyos-lto-core \
+    kernel-modules=kernel-cachyos-lto-modules \
+    kernel-modules-extra=kernel-cachyos-lto-modules-extra \
+    kernel-modules-core=kernel-cachyos-lto-modules-core
 
 # 3. STEP TWO: Install Addons
 # These are new packages, so we do a standard install. 
