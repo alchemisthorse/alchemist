@@ -6,17 +6,16 @@ dnf5 -y copr enable bieszczaders/kernel-cachyos-lto
 dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
 
 # 2. THE KERNEL SWAP
-# The package name in the LTO repo is 'kernel-cachyos'. 
-# The 'lto' part is in the repo name, not the package name itself.
+# Using the specific LTO package names as they appear in the repo metadata.
 rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos-lto \
-    kernel=kernel-cachyos
+    kernel-cachyos-lto
 
 # 3. INSTALL ADDONS & SCHEDULERS
-# Matching the names for the devel package and addons
+# We install the LTO-matched devel headers and the scx tools.
 rpm-ostree install \
-    kernel-cachyos-devel-matched \
+    kernel-cachyos-lto-devel-matched \
     cachyos-settings \
     cachyos-addons \
     ananicy-cpp \
