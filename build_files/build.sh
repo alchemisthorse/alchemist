@@ -6,14 +6,18 @@ dnf5 -y copr enable bieszczaders/kernel-cachyos-lto
 dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
 
 # 2. THE KERNEL SWAP
-# Using the specific LTO package names as they appear in the repo metadata.
+# Using the specific LTO package names
 rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos-lto \
     kernel-cachyos-lto
 
-# 3. INSTALL ADDONS & SCHEDULERS
-# We install the LTO-matched devel headers and the scx tools.
+# 3. FIX FOR DRACUT ERROR: Manual depmod
+# We extract the version string to make it dynamic
+KERNEL_VERSION=$(rpm -q --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}' kernel-cachyos-lto)
+depmod -a "$KERNEL_VERSION"
+
+# 4. INSTALL ADDONS & SCHEDULERS
 rpm-ostree install \
     kernel-cachyos-lto-devel-matched \
     cachyos-settings \
@@ -24,6 +28,6 @@ rpm-ostree install \
     scx-scheds \
     scx-tools
 
-# 4. ENABLE SERVICES
+# 5. ENABLE SERVICES
 systemctl enable ananicy-cpp
 systemctl enable scx-loader
