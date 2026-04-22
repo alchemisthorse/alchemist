@@ -1,36 +1,34 @@
 #!/bin/bash
 set -ouex pipefail
 
-# 1. ADD REPOS
+# 1. Enable both COPR repositories
 dnf5 -y copr enable bieszczaders/kernel-cachyos
 dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
 
-# 2. REMOVE CONFLICTS & BLOAT
-# We MUST remove power-profiles-daemon so Tuned can work.3
-#rpm-ostree override remove \
-#    power-profiles-daemon \
-#    steamdeck-dsp \
-#    steamdeck-firmware \
-#    jupiter-hw-support \
-#    jupiter-fan-control
-
-# 3. THE KERNEL SWAP
-# This swaps the kernel and adds the CachyOS-specific performance tools.
+# 2. STEP ONE: Replace the Kernel
+# We use --from to point specifically to the kernel-cachyos repo.
+# The A=B syntax maps the standard Fedora names to the CachyOS names.
 rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos \
-    kernel kernel-core kernel-modules kernel-modules-extra kernel-modules-core \
-    --install kernel-cachyos-devel-matched \
-    --install cachyos-settings \
-    --install cachyos-addons \
-    --install ananicy-cpp \
-    --install cachyos-ananicy-rules \
-    --install scx-manager \
-    --install scx-scheds
+    kernel=kernel-cachyos \
+    kernel-core=kernel-cachyos-core \
+    kernel-modules=kernel-cachyos-modules \
+    kernel-modules-extra=kernel-cachyos-modules-extra \
+    kernel-modules-core=kernel-cachyos-modules-core
 
-# 4. ENABLE SERVICES
+# 3. STEP TWO: Install Addons
+# These are new packages, so we do a standard install. 
+# rpm-ostree will find these in the kernel-cachyos-addons repo.
+rpm-ostree install \
+    kernel-cachyos-devel-matched \
+    cachyos-settings \
+    cachyos-addons \
+    ananicy-cpp \
+    cachyos-ananicy-rules \
+    scx-manager \
+    scx-tools \
+    scx-scheds
+
+# 4. Final System Configuration
 systemctl enable ananicy-cpp
-# Waydroid and Tuned are already enabled in Bazzite, 
-# but running these again doesn't hurt just to be safe:
-systemctl enable waydroid-container.service
-systemctl enable tuned
